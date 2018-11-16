@@ -9,6 +9,8 @@ export const GET_CHILD_CATEGORIES = 'GET_CHILD_CATEGORIES';
 export const IS_FETCHING_CHILD_CATEGORIES = 'IS_FETCHING_CHILD_CATEGORIES';
 export const RECEIVED_CATEGORIES = 'RECEIVED_CATEGORIES';
 export const CATEGORY_LEVEL_ALTERED = 'CATEGORY_LEVEL_ALTERED';
+export const IS_CREATING_FILTER = 'IS_CREATING_FILTER';
+export const CREATED_FILTER = 'CREATED_FILTER';
 
 const receivedFilterHistorySummary = (items: IEbayItem[]): AnyAction => {
   return {
@@ -61,5 +63,31 @@ export function getChildCategories(categoryId: number, level: number): ThunkResu
       .then((url) => fetch(`${url}/ebay/category/${categoryId}`)
       .then((res) => res.json())
       .then((json) => dispatch(receivedChildCategories(json, level))));
+  }
+}
+
+export function createFilter(filterName: string, categories: number[], keywords: string, conditions: number[], period: number): ThunkResult<void> {
+  return (dispatch) => {
+    dispatch({
+      type: IS_CREATING_FILTER
+    });
+    const filterPostBody = {
+      filterName,
+      categories,
+      keywords,
+      conditions,
+      period
+    };
+    getDataUrl()
+      .then((url) => fetch(`${url}/filters`, {
+        method: 'POST',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(filterPostBody) 
+      })
+      .then((res) => res.json())
+      .then((json) => console.log(json)));
   }
 }

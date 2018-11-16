@@ -1,7 +1,7 @@
 import * as React from 'react';
 import ItemCategoryWizardSelectBox from './ItemCategoryWizardSelectBox';
 import { IReduxState, IEbayCategoryModel, IConditionModel } from 'src/App/index';
-import { getFilterHistorySummary, getChildCategories, categoryLevelAltered, addCategoryLevelValue } from 'src/App/redux/actions/filterActions';
+import { getFilterHistorySummary, getChildCategories, categoryLevelAltered, addCategoryLevelValue, createFilter } from 'src/App/redux/actions/filterActions';
 import { connect } from 'react-redux';
 import { Dispatch } from 'redux';
 import { LoadingSquare } from 'src/Components/LoadingSquare';
@@ -18,6 +18,7 @@ interface IFormDispatchProps {
   getChildCategories: (categoryId: number, level: number) => void;
   alterCategories: (level: number) => void;
   addCategoryLevelValue: (categoryName: string, level: number) => void;
+  createFilter: (filterName: string, categories: number[], keywords: string, conditions: number[], period: number) => void;
 }
 
 type IFormProps = IFormStateProps & IFormDispatchProps;
@@ -175,7 +176,7 @@ class Form extends React.Component<IFormProps, IFormState> {
                         }
                       </div>
                       <div className="col-2">
-                        <button className="btn btn-success float-right">Save Filter</button>
+                        <button className="btn btn-success float-right" onClick={this.saveFilter}>Save Filter</button>
                       </div>             
                     </div>
                   </form>
@@ -286,8 +287,7 @@ class Form extends React.Component<IFormProps, IFormState> {
     });
   }
 
-  private calculateReport = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
+  private validateForm = (): boolean => {
     let error: boolean = false;
 
     if (this.state.filterName.length === 0) {
@@ -337,22 +337,57 @@ class Form extends React.Component<IFormProps, IFormState> {
       error = true;
     }
 
-    if (!error) {
-      if (category) {
-        const conditionsAsNumbers = this.state.selectedConditions.map((c) => {
-          const model = this.props.ebayConditions.find((cm) => cm.name === c);
+    return error;
+  }
 
-          if (model) {
-            return model.id;
-          }
+  private getCategory = (): IEbayCategoryModel | undefined => {
+    const categoryLevel = this.props.categoryHeirarchyValues.length - 1;
+    const categoryLevelCategories = this.props.categoryModels[categoryLevel];
 
-          return -1;
-        });
+    if (categoryLevelCategories == null) {
+      return undefined;
+    }
 
-        this.props.fetchFilterHistory(category.categoryID, this.state.keywords, conditionsAsNumbers, this.state.historicalPeriod);
+    const category = categoryLevelCategories.find((c) => c.categoryName !== this.props.categoryHeirarchyValues[categoryLevel]);
+
+    return category;
+  }
+
+  private getConditionsAsNumbers = (): number[] => {
+    const conditionsAsNumbers = this.state.selectedConditions.map((c) => {
+      const model = this.props.ebayConditions.find((cm) => cm.name === c);
+
+      if (model) {
+        return model.id;
       }
+
+      return -1;
+    });
+
+    return conditionsAsNumbers;
+  }
+
+  private calculateReport = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    const category = this.getCategory();
+    if (!this.validateForm() && category) {
+      const conditionsAsNumbers = this.getConditionsAsNumbers();
+
+      this.props.fetchFilterHistory(category.categoryID, this.state.keywords, conditionsAsNumbers, this.state.historicalPeriod);
     };
   }
+
+  private saveFilter = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+
+    const category = this.getCategory();
+    if (!this.validateForm() && category) {
+      const conditionsAsNumbers = this.getConditionsAsNumbers();
+
+      this.props.createFilter(this.state.filterName, [1000], this.state.keywords, conditionsAsNumbers, this.state.historicalPeriod);
+    }
+  } 
 }
 
 const mapStateToProps = (state: IReduxState): IFormStateProps => {
@@ -369,7 +404,8 @@ const mapDispatchToProps = (dispatch: Dispatch): IFormDispatchProps => {
     fetchFilterHistory: (categoryId: number, filterString: string, conditions: number[], daysBack: number) => dispatch<any>(getFilterHistorySummary(categoryId, filterString, conditions, daysBack)),
     getChildCategories: (categoryId: number, level: number) => dispatch<any>(getChildCategories(categoryId, level)),
     alterCategories: (level: number) => dispatch<any>(categoryLevelAltered(level)),
-    addCategoryLevelValue: (categoryName: string, level: number) => dispatch<any>(addCategoryLevelValue(categoryName, level))
+    addCategoryLevelValue: (categoryName: string, level: number) => dispatch<any>(addCategoryLevelValue(categoryName, level)),
+    createFilter: (filterName: string, categories: number[], keywords: string, conditions: number[], period: number) => dispatch<any>(createFilter(filterName, categories, keywords, conditions, period))
   };
 };
 

@@ -20,7 +20,7 @@ namespace Instabuy.Web
         {
             var builder = new ConfigurationBuilder();
             builder.AddEnvironmentVariables()
-                   .AddUserSecrets(nameof(Instabuy.Web));
+                   .AddUserSecrets("Instabuy.Web");
 
             Configuration = builder.Build();
         }

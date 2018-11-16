@@ -21,7 +21,7 @@ namespace Instabuy.Web.Controllers
         }
 
         [HttpGet("history/{categoryId}/{filterString}/{conditions}/{daysBack}")]
-        [ProducesResponseType(typeof(IEnumerable<EbayItemModelNormalized>), (int)HttpStatusCode.OK)]
+        [Produces(typeof(IEnumerable<EbayItemModelNormalized>))]
         public async Task<IActionResult> GetFilterHistory(int categoryId, string filterString, string conditions, int daysBack)
         {
             filterString = filterString.Replace(' ', '+');
@@ -32,7 +32,7 @@ namespace Instabuy.Web.Controllers
         }
 
         [HttpGet("category/{categoryId}")]
-        [ProducesResponseType(typeof(IEnumerable<CategoryModel>), (int)HttpStatusCode.OK)]
+        [Produces(typeof(IEnumerable<CategoryModel>))]
         public async Task<IActionResult> GetChildCategories(int categoryId)
         {
             var categories = await _ebaySearchRepository.GetChildCategories(categoryId).ConfigureAwait(false);
