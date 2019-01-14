@@ -11,13 +11,13 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Instabuy.Data.Sql", "Instab
 EndProject
 Project("{00D1A9C2-B5F0-4AF3-8072-F6C62B433612}") = "Instabuy.Sql", "Instabuy.Sql\Instabuy.Sql.sqlproj", "{61F15D09-4C70-4DD4-A466-2EDECA45C9B6}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Instabuy.Functions", "Instabuy.Functions\Instabuy.Functions.csproj", "{2F7F6779-20F1-41BA-A66A-18181BCB5FD9}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Instabuy.Azure", "Instabuy.Azure\Instabuy.Azure.csproj", "{0ADA73F5-7BF5-4E54-A72B-7502A7F68641}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Instabuy.Exceptions", "Instabuy.Exceptions\Instabuy.Exceptions.csproj", "{58223890-E087-47EA-9B28-D980AEB1E4D2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Instabuy.Web", "Instabuy.Web\Instabuy.Web.csproj", "{D60D6826-711A-4B29-A325-20BC46E1728A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Instabuy.Web", "Instabuy.Web\Instabuy.Web.csproj", "{D60D6826-711A-4B29-A325-20BC46E1728A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Instabuy.Helpers", "Instabuy.Helpers\Instabuy.Helpers.csproj", "{E235902D-0250-4589-89B1-AD1434ADA515}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -43,10 +43,6 @@ Global
 		{61F15D09-4C70-4DD4-A466-2EDECA45C9B6}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{61F15D09-4C70-4DD4-A466-2EDECA45C9B6}.Release|Any CPU.Build.0 = Release|Any CPU
 		{61F15D09-4C70-4DD4-A466-2EDECA45C9B6}.Release|Any CPU.Deploy.0 = Release|Any CPU
-		{2F7F6779-20F1-41BA-A66A-18181BCB5FD9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{2F7F6779-20F1-41BA-A66A-18181BCB5FD9}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{2F7F6779-20F1-41BA-A66A-18181BCB5FD9}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{2F7F6779-20F1-41BA-A66A-18181BCB5FD9}.Release|Any CPU.Build.0 = Release|Any CPU
 		{0ADA73F5-7BF5-4E54-A72B-7502A7F68641}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{0ADA73F5-7BF5-4E54-A72B-7502A7F68641}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0ADA73F5-7BF5-4E54-A72B-7502A7F68641}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -59,6 +55,10 @@ Global
 		{D60D6826-711A-4B29-A325-20BC46E1728A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D60D6826-711A-4B29-A325-20BC46E1728A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D60D6826-711A-4B29-A325-20BC46E1728A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E235902D-0250-4589-89B1-AD1434ADA515}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E235902D-0250-4589-89B1-AD1434ADA515}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E235902D-0250-4589-89B1-AD1434ADA515}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E235902D-0250-4589-89B1-AD1434ADA515}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

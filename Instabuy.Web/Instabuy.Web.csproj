@@ -17,6 +17,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Instabuy.Helpers\Instabuy.Helpers.csproj" />
     <ProjectReference Include="..\Instabuy.Repositories\Instabuy.Data.Sql.csproj" />
   </ItemGroup>
 

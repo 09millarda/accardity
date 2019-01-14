@@ -14,12 +14,14 @@ namespace Instabuy.Data.Sql
         public DbSet<Sql.Models.User> Users { get; set; }
         public DbSet<Sql.Models.Filter> Filters { get; set; }
         public DbSet<Sql.Models.ApiKey> ApiKeys { get; set; }
+        public DbSet<Sql.Models.HistoricalItemInfo> HistoricalItems { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<Sql.Models.User>().HasKey(u => u.UserId);
-            modelBuilder.Entity<Sql.Models.Filter>().HasKey(f => f.FilterId);
+            modelBuilder.Entity<Sql.Models.User>().HasKey(k => k.UserId);
+            modelBuilder.Entity<Sql.Models.Filter>().HasKey(k => k.FilterId);
             modelBuilder.Entity<Sql.Models.ApiKey>().HasKey(k => k.ApiKeyId);
+            modelBuilder.Entity<Sql.Models.HistoricalItemInfo>().HasKey(k => k.ItemId);
         }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)

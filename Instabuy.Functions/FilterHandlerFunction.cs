@@ -15,35 +15,35 @@ namespace Instabuy.Functions
 {
     public static class FilterHandlerFunction
     {
-        private static IServiceProvider _container = new ContainerBuilder().RegisterModule<CoreAppModule>().Build();
+    //    private static IServiceProvider _container = new ContainerBuilder().RegisterModule<CoreAppModule>().Build();
 
-        [FunctionName("FilterHandlerFunctionHttp")]
-        public static Task RunHttp([HttpTrigger(AuthorizationLevel.Function, "get", Route = null)]HttpRequest req) => Run((TimerInfo)null);
+    //    [FunctionName("FilterHandlerFunctionHttp")]
+    //    public static Task RunHttp([HttpTrigger(AuthorizationLevel.Function, "get", Route = null)]HttpRequest req) => Run((TimerInfo)null);
 
-        [FunctionName("FilterHandlerFunction")]
-        public static async Task Run([TimerTrigger("0 */1 * * * *")]TimerInfo timer)
-        {
-            var filtersRepository = _container.GetService<IFiltersRepository>();
-            var httpClient = _container.GetService<HttpClient>();
-            var functionSettings = _container.GetService<FunctionsSettingsModel>();
+    //    [FunctionName("FilterHandlerFunction")]
+    //    public static async Task Run([TimerTrigger("0 */1 * * * *")]TimerInfo timer)
+    //    {
+    //        var filtersRepository = _container.GetService<IFiltersRepository>();
+    //        var httpClient = _container.GetService<HttpClient>();
+    //        var functionSettings = _container.GetService<FunctionsSettingsModel>();
 
-            var filters = await filtersRepository.Get().ConfigureAwait(false);
+    //        var filters = await filtersRepository.Get().ConfigureAwait(false);
 
-            var postings = new List<Task<HttpResponseMessage>>();
-            foreach (var filter in filters)
-            {
-                var filterPostBody = new FilterPostBodyModel
-                {
-                    filter = filter.FilterString,
-                    filterId = filter.FilterId
-                };
+    //        var postings = new List<Task<HttpResponseMessage>>();
+    //        foreach (var filter in filters)
+    //        {
+    //            var filterPostBody = new FilterPostBodyModel
+    //            {
+    //                filter = filter.FilterString,
+    //                filterId = filter.FilterId
+    //            };
 
-                var postBody = new StringContent(JsonConvert.SerializeObject(filterPostBody), Encoding.UTF8, "application/json");
+    //            var postBody = new StringContent(JsonConvert.SerializeObject(filterPostBody), Encoding.UTF8, "application/json");
 
-                postings.Add(httpClient.PostAsync(functionSettings.EbaySearchFunctionUrl, postBody));
-            }
+    //            postings.Add(httpClient.PostAsync(functionSettings.EbaySearchFunctionUrl, postBody));
+    //        }
 
-            Task.WhenAll(postings);
-        }
+    //        Task.WhenAll(postings);
+    //    }
     }
 }

@@ -1,4 +1,5 @@
 import * as React from 'react';
+import Logo from '../../App/assets/images/logos/logo.png';
 
 class Header extends React.Component {
   public render() {
@@ -7,8 +8,8 @@ class Header extends React.Component {
         <div className="topbar-left">
           <div className="text-center">
             <a href="/" className="logo">
-              <i className="mdi mdi-radar" />
-              <span>Instabuy</span>
+              <img src={Logo} alt="Instabuy Logo" width="30" />
+              <span style={{position: 'relative', top: '3px', left: '4px'}}>Instabuy</span>
             </a>
           </div>
         </div>

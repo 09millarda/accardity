@@ -13,7 +13,7 @@ class SideBar extends React.Component {
                 <li className="active">
                   <NavLink exact={true} to="/">
                     <i className="ti-home" />
-                    Dashboard
+                    Recent Listings
                   </NavLink>
                 </li>
                 <li className="menu-title">Filters</li>
@@ -27,6 +27,19 @@ class SideBar extends React.Component {
                   <NavLink exact={true} to="/filters/create">
                     <i className="fa fa-plus-square-o" />
                     Create
+                  </NavLink>
+                </li>
+                <li className="menu-title">Bot</li>
+                <li>
+                  <NavLink exact={true} to="/bot/dashboard">
+                    <i className="mdi mdi-robot" />
+                    Dashboard
+                  </NavLink>
+                </li>
+                <li>
+                  <NavLink exact={true} to="/bot/settings">
+                    <i className="fa fa-cog" />
+                    Configuration
                   </NavLink>
                 </li>
               </ul>

@@ -1,4 +1,4 @@
-import { ThunkResult, IEbayItem, IEbayCategoryModel } from 'src/App/index';
+import { ThunkResult, IEbayItem, IEbayCategoryModel, IFilter, IFullFilter, IEbayItemFull } from 'src/App/index';
 import { getDataUrl } from 'src/App/common/endpointControl';
 import { AnyAction } from 'redux';
 
@@ -11,6 +11,13 @@ export const RECEIVED_CATEGORIES = 'RECEIVED_CATEGORIES';
 export const CATEGORY_LEVEL_ALTERED = 'CATEGORY_LEVEL_ALTERED';
 export const IS_CREATING_FILTER = 'IS_CREATING_FILTER';
 export const CREATED_FILTER = 'CREATED_FILTER';
+export const IS_FETCHING_FILTERS = 'IS_FETCHING_FILTERS';
+export const RECEIVED_FILTERS = 'RECEIVED_FILTERS';
+export const IS_FETCHING_FULL_FILTER = 'IS_FETCHING_FULL_FILTER0';
+export const RECEIVED_FULL_FILTER = 'RECEIVED_FULL_FILTER';
+export const RECEIVED_FULL_ITEMS = 'RECEIVED_FULL_ITEMS';
+export const FETCH_BASE_FILTER_HISTORY = 'FETCH_BASE_FILTER_HISTORY';
+export const RECEIVED_BASE_FILTER_HISTORY = 'RECEIVED_BASE_FILTER_HISTORY';
 
 const receivedFilterHistorySummary = (items: IEbayItem[]): AnyAction => {
   return {
@@ -27,16 +34,52 @@ const receivedChildCategories = (categories: IEbayCategoryModel[], level: number
   };
 };
 
-export function getFilterHistorySummary(categoryId: number, filterString: string, conditions: number[], daysBack: number): ThunkResult<void> {
-  return (dispatch) => {
-    dispatch({
-      type: FETCH_FILTER_HISTORY_SUMMARY
-    });
-    getDataUrl()
-      .then((url) => fetch(`${url}/ebay/history/${categoryId}/${filterString}/${conditions.join(',')}/${daysBack}`)
-      .then((res) => res.json())
-      .then((json) => dispatch(receivedFilterHistorySummary(json))));
+const receivedFilters = (filters: IFilter[]): AnyAction => {
+  return {
+    type: RECEIVED_FILTERS,
+    filters
   };
+};
+
+const receivedFullFilter = (fullFilter: IFullFilter): AnyAction => {
+  return {
+    type: RECEIVED_FULL_FILTER,
+    fullFilter
+  };
+};
+
+const receivedFullItems = (fullItems: IEbayItemFull): AnyAction => {
+  return {
+    type: RECEIVED_FULL_ITEMS,
+    fullItems
+  };
+};
+
+const receivedBaseFilterHistory = (items: IEbayItem[]): AnyAction => {
+  return {
+    type: RECEIVED_BASE_FILTER_HISTORY,
+    items
+  };
+};
+
+export function getBaseFilterHistorySummary(categoryId: number, filterString: string, conditions: number[], priceMin?: number, priceMax?: number, minFeedbackScore?: number): ThunkResult<void> {
+  return async (dispatch) => {
+    dispatch({
+      type: FETCH_BASE_FILTER_HISTORY
+    });
+
+    const items = await getFilterHistorySummary(categoryId, filterString, conditions, priceMin, priceMax, minFeedbackScore);
+
+    dispatch(receivedBaseFilterHistory(items));
+  }
+}
+
+export async function getFilterHistorySummary(categoryId: number, filterString: string, conditions: number[], priceMin?: number, priceMax?: number, minFeedbackScore?: number): Promise<IEbayItem[]> {
+  const url = await getDataUrl();
+  const res = await fetch(`${url}/ebay/history?categoryId=${categoryId}&filterString=${encodeURIComponent(filterString)}&conditions=${conditions.join(',')}${priceMin != null ? `&priceMin=${priceMin}` : ''}${priceMax != null ? `&priceMax=${priceMax}` : ''}${minFeedbackScore != null ? `&minFeedbackScore=${minFeedbackScore}` : ''}`);
+  const json = await res.json();
+
+  return json;
 }
 
 export function addCategoryLevelValue(categoryName: string, level: number): AnyAction {
@@ -55,30 +98,34 @@ export function categoryLevelAltered(level: number): AnyAction {
 }
 
 export function getChildCategories(categoryId: number, level: number): ThunkResult<void> {
-  return (dispatch) => {
+  return async (dispatch) => {
     dispatch({
       type: IS_FETCHING_CHILD_CATEGORIES
     });
-    getDataUrl()
-      .then((url) => fetch(`${url}/ebay/category/${categoryId}`)
-      .then((res) => res.json())
-      .then((json) => dispatch(receivedChildCategories(json, level))));
+    
+    const url = await getDataUrl();
+    const res = await fetch(`${url}/ebay/category/${categoryId}`);
+    const json = await res.json();
+    dispatch(receivedChildCategories(json, level));
   }
 }
 
-export function createFilter(filterName: string, categories: number[], keywords: string, conditions: number[], period: number): ThunkResult<void> {
+export function createFilter(filterName: string, categoryId: number, keywords: string, conditions: number[], priceMin: number | null, priceMax: number | null, userFeedbackMin: number | null): ThunkResult<void> {
   return (dispatch) => {
     dispatch({
       type: IS_CREATING_FILTER
     });
     const filterPostBody = {
+      active: false,
       filterName,
-      categories,
+      categoryId,
       keywords,
       conditions,
-      period
+      priceMax,
+      priceMin,
+      userFeedbackMin
     };
-    getDataUrl()
+    return getDataUrl()
       .then((url) => fetch(`${url}/filters`, {
         method: 'POST',
         headers: {
@@ -86,8 +133,58 @@ export function createFilter(filterName: string, categories: number[], keywords:
           'Content-Type': 'application/json'
         },
         body: JSON.stringify(filterPostBody) 
-      })
+      }));
+  }
+}
+
+export function fetchFilters(): ThunkResult<void> {
+  return (dispatch) => {
+    dispatch({
+      type: IS_FETCHING_FILTERS
+    });
+    return getDataUrl()
+      .then((url) => fetch(`${url}/filters`)
       .then((res) => res.json())
-      .then((json) => console.log(json)));
+      .then((json) => dispatch(receivedFilters(json))));
+  }
+}
+
+export function fetchFullFilter(filterId: number): ThunkResult<void> {
+  return (dispatch) => {
+    dispatch({
+      type: IS_FETCHING_FULL_FILTER
+    });
+    return getDataUrl()
+      .then((url) => fetch(`${url}/filters/${filterId}`)
+      .then((res) => res.json())
+      .then((json) => dispatch(receivedFullFilter(json))));
+  }
+}
+
+export function loadDemoData(): ThunkResult<void> {
+  return async (dispatch) => {
+    dispatch({
+      type: IS_FETCHING_FULL_FILTER
+    });
+
+    const demoItemsResponse = await fetch('http://localhost:3000/ItemSummary.json', {
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      }
+    });
+    const demoItems = await demoItemsResponse.json();
+
+    dispatch(receivedFilterHistorySummary(demoItems));
+  }
+}
+
+export function getMultipleItems(itemIds: number[]): ThunkResult<void> {
+  return async (dispatch) => {
+    const url = await getDataUrl();
+    const res = await fetch(`${url}/ebay/getMultipleItems/${itemIds.join(',')}`);
+    const items = await res.json();
+
+    dispatch(receivedFullItems(items));
   }
 }
