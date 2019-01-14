@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Xml;
 
 namespace Instabuy.Data
 {
@@ -91,6 +92,74 @@ namespace Instabuy.Data
                         TopRatedListing = i.TopRatedListing.FirstOrDefault()
                     }) : null
                 } : null
+            };
+        }
+
+        public static FullItem.Processed.FullItemModel Normalize(this FullItem.Raw.FullItemModel responseModel)
+        {
+            return new FullItem.Processed.FullItemModel
+            {
+                TimeStamp = responseModel.Timestamp,
+                Items = responseModel.Item.Select(i => new FullItem.Processed.EbayItemModel
+                {
+                    AutoPay = i.AutoPay,
+                    BestOfferEnabled = i.BestOfferEnabled,
+                    BidCount = i.BidCount,
+                    CategoryId = i.PrimaryCategoryId,
+                    CategoryName = i.PrimaryCategoryName,
+                    ConditionDisplayName = i.ConditionDisplayName,
+                    ConditionId = i.ConditionId,
+                    ConvertedCurrentPrice = i.ConvertedCurrentPrice == null ? null : new FullItem.Processed.PriceModel
+                    {
+                        CurrencyId = i.ConvertedCurrentPrice.CurrencyId,
+                        Value = i.ConvertedCurrentPrice.Value
+                    },
+                    Country = i.Country,
+                    CurrentPrice = i.CurrentPrice == null ? null : new FullItem.Processed.PriceModel
+                    {
+                        CurrencyId = i.CurrentPrice.CurrencyId,
+                        Value = i.CurrentPrice.Value
+                    },
+                    Description = i.Description,
+                    EbaySite = i.Site,
+                    EndTime = i.EndTime,
+                    GalleryUrl = i.GalleryURL,
+                    GlobalShipping = i.GlobalShipping,
+                    HandlingTime = i.HandlingTime,
+                    HitCount = i.HitCount,
+                    ItemId = long.Parse(i.ItemId),
+                    ListingStatus = i.ListingStatus,
+                    ItemSpecifics = i.ItemSpecifics == null ? null : i.ItemSpecifics.NameValueList.Select(n => new FullItem.Processed.ItemSpecifics
+                    {
+                        Name = n.Name,
+                        Values = n.Value
+                    }),
+                    ListingType = i.ListingType,
+                    ListingUrl = i.ViewItemURLForNaturalSearch,
+                    Location = i.Location,
+                    MinimumToBid = i.MinimumToBid == null ? null : new FullItem.Processed.PriceModel
+                    {
+                        CurrencyId = i.MinimumToBid.CurrencyId,
+                        Value = i.MinimumToBid.Value
+                    },
+                    PaymentMethods = i.PaymentMethods,
+                    PictureUrls = i.PictureURL,
+                    Postcode = i.PostalCode,
+                    ProductId = i.PostalCode,
+                    QuantitySold = i.QuantitySold,
+                    Seller = i.Seller == null ? null : new FullItem.Processed.SellerModel
+                    {
+                        FeedbackScore = i.Seller.FeedbackScore,
+                        FeedbackStarColor = i.Seller.FeedbackRatingStar,
+                        PositiveFeedbackPercent = i.Seller.PositiveFeedbackPercent,
+                        UserId = i.Seller.UserId
+                    },
+                    ShipToLocations = i.ShipToLocations,
+                    StartTime = i.StartTime,
+                    TimeLeft = XmlConvert.ToTimeSpan(i.TimeLeft),
+                    Title = i.Title,
+                    ReturnsAccepted = i.ReturnPolicy == null ? false : i.ReturnPolicy.ReturnsAccepted != "ReturnsNotAccepted"
+                }).ToList()
             };
         }
     }

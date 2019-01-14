@@ -20,24 +20,32 @@ namespace Instabuy.Web.Controllers
             _ebaySearchRepository = ebaySearchRepository;
         }
 
-        [HttpGet("history/{categoryId}/{filterString}/{conditions}/{daysBack}")]
-        [ProducesResponseType(typeof(IEnumerable<EbayItemModelNormalized>), (int)HttpStatusCode.OK)]
-        public async Task<IActionResult> GetFilterHistory(int categoryId, string filterString, string conditions, int daysBack)
+        [HttpGet("history")]
+        [Produces(typeof(IEnumerable<EbayItemModelNormalized>))]
+        public async Task<IActionResult> GetFilterHistory(int categoryId, string filterString, string conditions, decimal? priceMin, decimal? priceMax, decimal? minFeedbackScore)
         {
-            filterString = filterString.Replace(' ', '+');
-
-            var historicalItems = await _ebaySearchRepository.GetHistory(DateTimeOffset.UtcNow.Date.AddDays(-daysBack), categoryId, filterString, conditions.Split(',').Select(c => int.Parse(c)).ToArray()).ConfigureAwait(false);
+            var historicalItems = await _ebaySearchRepository.GetHistory(DateTimeOffset.UtcNow.Date.AddDays(-90), categoryId, filterString, conditions.Split(',').Select(c => int.Parse(c)).ToArray(), priceMin, priceMax, minFeedbackScore).ConfigureAwait(false);
 
             return Ok(historicalItems);
         }
 
         [HttpGet("category/{categoryId}")]
-        [ProducesResponseType(typeof(IEnumerable<CategoryModel>), (int)HttpStatusCode.OK)]
+        [Produces(typeof(IEnumerable<CategoryModel>))]
         public async Task<IActionResult> GetChildCategories(int categoryId)
         {
             var categories = await _ebaySearchRepository.GetChildCategories(categoryId).ConfigureAwait(false);
 
             return Ok(categories.Where(c => c.CategoryID != categoryId));
+        }
+
+        [HttpGet("getMultipleItems/{itemIds}")]
+        public async Task<IActionResult> GetMultipleItems(string itemIds)
+        {
+            var ids = itemIds.Split(',');
+
+            var items = await _ebaySearchRepository.GetMultipleItems(ids).ConfigureAwait(false);
+
+            return Ok(items);
         }
     }
 }

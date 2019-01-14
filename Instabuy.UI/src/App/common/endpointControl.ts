@@ -5,6 +5,6 @@ export const getDataUrl = async (): Promise<string> => {
     case 'instabuy.io':
       return `https://instabuy.io/api`;
     default:
-      return `https://localhost:44353/api`
+      return `http://localhost:5000/api`
   }
 };

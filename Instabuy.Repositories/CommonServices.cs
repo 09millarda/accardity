@@ -13,6 +13,7 @@ namespace Instabuy.Data.Sql
             services.AddTransient<IFiltersRepository>(options => new SqlFiltersRepository(options.GetService<InstabuyDbContext>()));
             services.AddTransient<IUsersRepository>(options => new SqlUsersRepository(options.GetService<InstabuyDbContext>()));
             services.AddTransient<IApiKeysRepository>(options => new SqlApiKeysRepository(options.GetService<InstabuyDbContext>()));
+            services.AddTransient<IHistoricalItemInfoRepository>(options => new SqlHistoricalItemInfoRepository(options.GetService<InstabuyDbContext>()));
             return services;
         }
     }

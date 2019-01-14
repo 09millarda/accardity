@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Instabuy.Data;
 using Instabuy.Data.Sql;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -20,7 +22,7 @@ namespace Instabuy.Web
         {
             var builder = new ConfigurationBuilder();
             builder.AddEnvironmentVariables()
-                   .AddUserSecrets(nameof(Instabuy.Web));
+                   .AddUserSecrets("Instabuy.Web");
 
             Configuration = builder.Build();
         }
@@ -31,6 +33,10 @@ namespace Instabuy.Web
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddSingleton(s => new InstabuyDbContext(Configuration["ConnectionStrings:DefaultConnection"]));
+            services.Configure<EbaySettings>((options) =>
+            {
+                options.ApiKey = Configuration["EbaySettings:ApiKey"];
+            });
             services.AddRepositories();
             services.AddCors(o =>
             {
@@ -57,6 +63,23 @@ namespace Instabuy.Web
 
             app.UseCors("DevPolicy");
             app.UseHttpsRedirection();
+
+            app.Use(async (context, next) =>
+            {
+                await next();
+                var path = context.Request.Path.Value;
+
+                if (!path.StartsWith("/api") && !Path.HasExtension(path))
+                {
+
+                    context.Request.Path = "/index.html";
+                    await next();
+                }
+            });
+
+            app.UseDefaultFiles();
+            app.UseStaticFiles();
+
             app.UseMvc();
         }
     }

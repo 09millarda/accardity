@@ -13,9 +13,11 @@
     <PackageReference Include="Microsoft.AspNetCore.App" />
     <PackageReference Include="Microsoft.Extensions.Configuration" Version="2.1.1" />
     <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="2.1.1" />
+    <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="2.1.1" />
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Instabuy.Helpers\Instabuy.Helpers.csproj" />
     <ProjectReference Include="..\Instabuy.Repositories\Instabuy.Data.Sql.csproj" />
   </ItemGroup>
 

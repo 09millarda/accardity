@@ -1,15 +1,36 @@
-import { IFilterState, IEbayCategoryModel } from "src/App/index";
+import { IFilterState, IEbayCategoryModel, IEbayItemFull } from "src/App/index";
 import { AnyAction } from 'redux';
-import { FETCH_FILTER_HISTORY_SUMMARY, RECEIVED_FILTER_HISTORY_SUMMARY, RECEIVED_CATEGORY_LEVEL_VALUE, IS_FETCHING_CHILD_CATEGORIES, RECEIVED_CATEGORIES, CATEGORY_LEVEL_ALTERED } from '../actions/filterActions';
+import { FETCH_FILTER_HISTORY_SUMMARY, RECEIVED_FILTER_HISTORY_SUMMARY, RECEIVED_CATEGORY_LEVEL_VALUE, IS_FETCHING_CHILD_CATEGORIES, RECEIVED_CATEGORIES, CATEGORY_LEVEL_ALTERED, IS_FETCHING_FILTERS, RECEIVED_FILTERS, IS_FETCHING_FULL_FILTER, RECEIVED_FULL_FILTER, RECEIVED_FULL_ITEMS, RECEIVED_BASE_FILTER_HISTORY, FETCH_BASE_FILTER_HISTORY } from '../actions/filterActions';
 
 export const initialFilterState: IFilterState = {
   createFilterState: {
+    baseFilterHistorySummary: {
+      fullItems: [],
+      items: [],
+      isFetchingItems: false,
+      isFetchingFullItems: false,
+      statistics: {
+        maxPrice: 0,
+        meanPrice: 0,
+        meanPriceIncShipping: 0,
+        minPrice: 0,
+        sd: 0,
+        sdItems: [],
+        sdMultipler: 0
+      }
+    },
     filterHistorySummary: [],
     isFetchingFilterHistorySummary: false,
     ebayCategoryHierarchy: [],
     ebayCategoryWizardValues: [],
     categoryLevelsAllowed: 4,
-    isFetchingCategories: false
+    isFetchingCategories: false,
+    items: []
+  },
+  manageFilterState: {
+    filters: [],
+    isFetchingFilters: false,
+    isFetchingFullFilter: false
   }
 };
 
@@ -45,6 +66,29 @@ const reducer = (state: IFilterState = initialFilterState, action: AnyAction) =>
       }
       receivedCategoriesState.createFilterState.ebayCategoryHierarchy[forLevel] = categories;
       return receivedCategoriesState;
+    case IS_FETCHING_FILTERS:
+      return {...state, manageFilterState: {...state.manageFilterState, isFetchingFilters: true}};
+    case RECEIVED_FILTERS:
+      return {...state, manageFilterState: {...state.manageFilterState, isFetchingFilters: false, filters: action.filters}};
+    case IS_FETCHING_FULL_FILTER:
+      return {...state, manageFilterState: {...state.manageFilterState, isFetchingFullFilter: true}};
+    case RECEIVED_FULL_FILTER:
+      return {...state, manageFilterState: {...state.manageFilterState, isFetchingFullFilter: false, fullFilter: action.fullFilter}};
+    case RECEIVED_FULL_ITEMS:
+      const items = state.createFilterState.items.slice();
+      const fullItems: IEbayItemFull[] = action.fullItems;
+
+      for (const item of fullItems) {
+        if (items.find((i) => i.itemId === item.itemId) == null) {
+          items.push(item);
+        }
+      }
+
+      return {...state, createFilterState: {...state.createFilterState, items}};
+    case RECEIVED_BASE_FILTER_HISTORY:
+      return {...state, createFilterState: {...state.createFilterState, baseFilterHistorySummary: {...state.createFilterState.baseFilterHistorySummary, items: action.items, isFetchingItems: false}}};
+    case FETCH_BASE_FILTER_HISTORY:
+      return {...state, createFilterState: {...state.createFilterState, baseFilterHistorySummary: {...state.createFilterState.baseFilterHistorySummary, isFetchingItems: true}}};
     default:
       return state;
   }

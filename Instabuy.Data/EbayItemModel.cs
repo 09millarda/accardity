@@ -22,5 +22,6 @@ namespace Instabuy.Data
         public List<EbayConditionModel> Condition { get; set; } = new List<EbayConditionModel>();
         public List<bool> TopRatedListing { get; set; } = new List<bool>();
         public List<bool> IsMultiVariationListing { get; set; } = new List<bool>();
+        public List<EbaySellerInfoModel> SellerInfo { get; set; } = new List<EbaySellerInfoModel>();
     }
 }

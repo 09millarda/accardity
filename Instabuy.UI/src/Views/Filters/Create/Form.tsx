@@ -1,62 +1,77 @@
 import * as React from 'react';
-import ItemCategoryWizardSelectBox from './ItemCategoryWizardSelectBox';
-import { IReduxState, IEbayCategoryModel, IConditionModel } from 'src/App/index';
-import { getFilterHistorySummary, getChildCategories, categoryLevelAltered, addCategoryLevelValue } from 'src/App/redux/actions/filterActions';
+import { IReduxState, IEbayCategoryModel, IConditionModel, ContextDispatch, IFilterCreateFormData, IEbayItem } from 'src/App/index';
 import { connect } from 'react-redux';
-import { Dispatch } from 'redux';
-import { LoadingSquare } from 'src/Components/LoadingSquare';
+import EbayItemCategoryWizard from 'src/Components/EbayItemCategoryWizard/EbayItemCategoryWizard';
+import { getDataUrl } from 'src/App/common/endpointControl';
 
 interface IFormStateProps {
-  isFetchingFilterHistory: boolean;
-  categoryHeirarchyValues: string[];
-  categoryModels: IEbayCategoryModel[][];
   ebayConditions: IConditionModel[];
 }
 
-interface IFormDispatchProps {
-  fetchFilterHistory: (categoryId: number, filterString: string, conditions: number[], daysBack: number) => void;
-  getChildCategories: (categoryId: number, level: number) => void;
-  alterCategories: (level: number) => void;
-  addCategoryLevelValue: (categoryName: string, level: number) => void;
+interface IFormInheritedProps {
+  dispatch: ContextDispatch;
+  formInfo: IFilterCreateFormData;
+  isFetching: boolean;
+  formChanged: boolean;
 }
 
-type IFormProps = IFormStateProps & IFormDispatchProps;
+export type IFormProps = IFormStateProps & IFormInheritedProps;
 
 interface IFormState {
-  filterName: string;
   keywords: string;
-  historicalPeriod: number;
+  category: IEbayCategoryModel | null;
+  selectedCategories: IEbayCategoryModel[];
+  priceMin?: number;
+  priceMax?: number;
+  feedbackScoreMin?: number;
+  priceMinError: string;
+  priceMaxError: string;
+  feedbackScoreMinError: string;
   filterNameError: string;
   keywordsError: string;
-  historicalPeriodError: string;
   categoryError: string;
   conditionError: string;
   ebayConditions: string[];
   selectedConditions: string[];
+  binOnly: boolean;
 }
 
 class Form extends React.Component<IFormProps, IFormState> {
+  private itemCategoryWizardRef: React.RefObject<EbayItemCategoryWizard>;
+
   public constructor(props: IFormProps) {
     super(props);
 
     this.state = {
-      filterName: '',
-      historicalPeriod: 90,
+      selectedCategories: [],
+      category: null,
       keywords: '',
       filterNameError: '',
-      historicalPeriodError: '',
       keywordsError: '',
       categoryError: '',
       conditionError: '',
       ebayConditions: [],
-      selectedConditions: []
+      selectedConditions: [],
+      priceMinError: '',
+      priceMaxError: '',
+      feedbackScoreMinError: '',
+      binOnly: false
     };
+
+    this.itemCategoryWizardRef = React.createRef<EbayItemCategoryWizard>();
   }
 
   public componentDidMount() {
-    this.props.getChildCategories(-1, 0);
+    console.log(this.props.formInfo.categories);
     this.setState({
-      ebayConditions: this.props.ebayConditions.map((c) => c.name)
+      ebayConditions: this.props.ebayConditions.map((c) => c.name),
+      keywords: this.props.formInfo.keywords,
+      feedbackScoreMin: this.props.formInfo.minUserFeedback,
+      priceMax: this.props.formInfo.priceMax,
+      priceMin: this.props.formInfo.priceMin,
+      selectedConditions: this.getConditionsAsModels(this.props.formInfo.conditions).map((c) => c.name),
+      binOnly: this.props.formInfo.binOnly,
+      selectedCategories: this.props.formInfo.categories
     });
   }
 
@@ -73,57 +88,25 @@ class Form extends React.Component<IFormProps, IFormState> {
                 <div className="p-20">
                   <form className="form-horizontal" role="form" onSubmit={this.calculateReport} noValidate={true}>
                     <div className="form-group row">
-                      <label className="col-2 col-form-label">Filter Name</label>
+                      <label className="col-2 col-form-label">Category *</label>
                       <div className="col-10">
-                        <input type="text" className={this.state.filterNameError.length === 0 ? 'form-control' : 'form-control parsley-error'} value={this.state.filterName} onChange={this.changeFilterName} />
+                        <EbayItemCategoryWizard
+                          depth={4}
+                          categoryChanged={this.categoryUpdated}
+                          ref={this.itemCategoryWizardRef}
+                          defaultValues={this.props.formInfo.categories}
+                        />
                         {
-                          this.state.filterNameError.length > 0 &&
+                          this.state.categoryError.length > 0 &&
                           <ul className="parsley-errors-list filled">
-                            <li className="parsley-required">{this.state.filterNameError}</li>
+                            <li className="parsley-required">{this.state.categoryError}</li>
                           </ul>
                         }
                       </div>
                     </div>
                     <div className="form-group row">
-                      <label className="col-2 col-form-label">Item Category Wizard</label>
-                      <div className="col-10">
-                        <div className="row">
-                          <div className="col-3">
-                            <ItemCategoryWizardSelectBox
-                              datalistId="createFilterDataListCategory1"
-                              categoryLevel={0}
-                            />
-                            {
-                              this.state.categoryError.length > 0 &&
-                              <ul className="parsley-errors-list filled">
-                                <li className="parsley-required">{this.state.categoryError}</li>
-                              </ul>
-                            }
-                          </div>
-                          <div className="col-3">
-                            <ItemCategoryWizardSelectBox
-                              datalistId="createFilterDataListCategory2"
-                              categoryLevel={1}
-                            />
-                          </div>
-                          <div className="col-3">
-                            <ItemCategoryWizardSelectBox
-                              datalistId="createFilterDataListCategory3"
-                              categoryLevel={2}
-                            />
-                          </div>
-                          <div className="col-3">
-                            <ItemCategoryWizardSelectBox
-                              datalistId="createFilterDataListCategory4"
-                              categoryLevel={3}
-                            />
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="form-group row">
                       <label className="col-2 col-form-label">
-                        Keyword Builder
+                        Keywords *
                       </label>
                       <div className="col-10">
                         <textarea className={this.state.keywordsError.length === 0 ? 'form-control' : 'form-control parsley-error'} rows={3} value={this.state.keywords} onChange={this.changeKeywords} />
@@ -136,8 +119,8 @@ class Form extends React.Component<IFormProps, IFormState> {
                       </div>
                     </div>
                     <div className="form-group row">
-                        <label className="col col-form-label">
-                          Condition
+                        <label className="col-2 col-form-label">
+                          Condition(s) *
                         </label>
                         <div className="col-10">
                           {
@@ -146,37 +129,71 @@ class Form extends React.Component<IFormProps, IFormState> {
                         </div>
                     </div>
                     <div className="form-group row">
-                      <label className="col-2 col-form-label">Historical Period (Days)</label>
+                      <label className="col-2 col-form-label">
+                        Price Range (£)
+                      </label>
                       <div className="col-10">
                         <div className="row">
                           <div className="col-3">
-                            <input type="number" className={this.state.historicalPeriodError.length === 0 ? 'form-control' : 'form-control parsley-error'} max={365} min={30} value={this.state.historicalPeriod} onChange={this.changeHistoricalPeriod} />
+                            <label>Min Price</label>
+                            <input onChange={this.changeMinPrice} type="number" step="0.01" className={this.state.priceMinError.length === 0 ? 'form-control' : 'form-control parsley-error'} value={this.state.priceMin || ''} />
+                          </div>
+                          <div className="col-3">
+                            <label>Max Price</label>
+                            <input onChange={this.changeMaxPrice} type="number" step="0.01" className={this.state.priceMaxError.length === 0 ? 'form-control' : 'form-control parsley-error'} value={this.state.priceMax || ''} />
+                          </div>
+                        </div>
+                        <div className="row">
+                          <div className="col-12">
                             {
-                              this.state.historicalPeriodError.length > 0 &&
+                              this.state.priceMinError.length > 0 &&
                               <ul className="parsley-errors-list filled">
-                                <li className="parsley-required">{this.state.historicalPeriodError}</li>
+                                <li className="parsley-required">{this.state.priceMinError}</li>
                               </ul>
                             }
-                            <span className="help-block">
-                              <small>Minimum = 30 days, maximum = 365 days</small>
-                            </span>
+                            {
+                              this.state.priceMaxError.length > 0 &&
+                              <ul className="parsley-errors-list filled">
+                                <li className="parsley-required">{this.state.priceMaxError}</li>
+                              </ul>
+                            }
                           </div>
                         </div>
                       </div>
                     </div>
-                    <br/>
-                    <div className="row">
+                    <div className="form-group row">
+                      <label className="col-2 col-form-label">
+                        Min. User Feedback
+                      </label>
                       <div className="col-10">
-                        <button className="btn btn-primary mr-3" disabled={this.props.isFetchingFilterHistory}>Calculate Report</button>
-                        <button className="btn btn-danger" onClick={this.resetForm}>Reset Filter</button>
-                        {
-                          this.props.isFetchingFilterHistory &&
-                          <LoadingSquare />
-                        }
+                        <div className="row">
+                          <div className="col-3">
+                            <input onChange={this.changeMinFeedbackScore} type="number" step="1" className={this.state.feedbackScoreMinError.length === 0 ? 'form-control' : 'form-control parsley-error'} value={this.state.feedbackScoreMin || ''} />
+                          </div>
+                        </div>
+                        <div className="row">
+                          <div className="col-12">
+                            {
+                              this.state.feedbackScoreMinError.length > 0 &&
+                              <ul className="parsley-errors-list filled">
+                                <li className="parsley-required">{this.state.feedbackScoreMinError}</li>
+                              </ul>
+                            }
+                          </div>
+                        </div>
                       </div>
-                      <div className="col-2">
-                        <button className="btn btn-success float-right">Save Filter</button>
-                      </div>             
+                    </div>
+                    <div className="form-group row">
+                      <label className="col-2 col-form-label">B.I.N. Only</label>
+                      <div className="col-10">
+                        <input type="checkbox" onChange={this.changeBinOnly} />
+                      </div>
+                    </div>
+                    <div className="row" style={{marginTop: '30px'}}>
+                      <div className="col-10">
+                        <button className="btn btn-primary mr-3" disabled={this.props.isFetching || !this.props.formChanged}>Calculate Report</button>
+                        <button className="btn btn-danger" onClick={this.resetForm}>Reset Filter</button>
+                      </div>          
                     </div>
                   </form>
                 </div>
@@ -186,6 +203,12 @@ class Form extends React.Component<IFormProps, IFormState> {
         </div>
       </div>
     );
+  }
+
+  private formDidChange() {
+    this.props.dispatch({
+      type: 'FormChanged'
+    });
   }
 
   private conditionSelector = (): JSX.Element => {
@@ -212,7 +235,7 @@ class Form extends React.Component<IFormProps, IFormState> {
           <div className={`ms-list ${this.state.conditionError.length > 0 ? 'parsley-error' : ''}`}>
             {
               this.state.ebayConditions.map((c, i)  => 
-                <div className="ms-elem-selectable noselect" onClick={this.toggleCondition} key={i} style={{display: this.state.selectedConditions.indexOf(c) > -1 ? 'block' : 'none'}}>{c}</div>
+                <div className="ms-elem-selectable ms-elem-remove noselect" onClick={this.toggleCondition} key={i} style={{display: this.state.selectedConditions.indexOf(c) > -1 ? 'block' : 'none'}}>{c}</div>
               )
             }
           </div>
@@ -236,47 +259,75 @@ class Form extends React.Component<IFormProps, IFormState> {
       selectedConditions,
       conditionError: ''
     });
+
+    this.formDidChange()
   }
 
   private resetForm = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
 
+    this.props.dispatch({
+      type: 'ResetForm'
+    });
+
     this.setState({
-      filterName: '',
       filterNameError: '',
-      historicalPeriod: 90,
-      historicalPeriodError: '',
       keywords: '',
       keywordsError: '',
       categoryError: '',
       conditionError: '',
-      selectedConditions: []
+      selectedConditions: [],
+      priceMax: undefined,
+      priceMaxError: '',
+      priceMin: undefined,
+      category: null,
+      priceMinError: '',
+      feedbackScoreMin: undefined,
+      feedbackScoreMinError: ''
     });
 
-    this.props.addCategoryLevelValue('', 0);
-    this.props.alterCategories(0);    
+    this.formDidChange()
+
+    if (this.itemCategoryWizardRef.current) {
+      this.itemCategoryWizardRef.current.clearDataLists();
+    }
   }
 
-  private changeFilterName = (e: React.ChangeEvent<HTMLInputElement>) => {
+  private changeBinOnly = (e: React.ChangeEvent<HTMLInputElement>) => {
     this.setState({
-      filterName: e.target.value,
-      filterNameError: ''
+      binOnly: e.target.checked
     });
+
+    this.formDidChange();
   }
 
-  private changeHistoricalPeriod = (e: React.ChangeEvent<HTMLInputElement>) => {
-    let period: number = 0;
-    try {
-      period = parseInt(e.target.value, 10);
-    }
-    catch (e) {
-      period = 0;
-    }
-
+  private changeMinFeedbackScore = (e: React.ChangeEvent<HTMLInputElement>) => {
     this.setState({
-      historicalPeriod: period,
-      historicalPeriodError: ''
+      feedbackScoreMin: parseFloat(e.target.value),
+      feedbackScoreMinError: ''
     });
+
+    this.formDidChange()
+  }
+
+  private changeMinPrice = (e: React.ChangeEvent<HTMLInputElement>) => {
+    this.setState({
+      priceMin: parseFloat(e.target.value),
+      priceMinError: '',
+      priceMaxError: ''
+    });
+
+    this.formDidChange()
+  }
+
+  private changeMaxPrice = (e: React.ChangeEvent<HTMLInputElement>) => {
+    this.setState({
+      priceMax: parseFloat(e.target.value),
+      priceMaxError: '',
+      priceMinError: ''
+    });
+
+    this.formDidChange()
   }
 
   private changeKeywords = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -284,16 +335,19 @@ class Form extends React.Component<IFormProps, IFormState> {
       keywords: e.target.value,
       keywordsError: ''
     });
+
+    this.formDidChange()
   }
 
-  private calculateReport = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
+  private validateForm = (): boolean => {
     let error: boolean = false;
 
-    if (this.state.filterName.length === 0) {
+    if (this.state.category == null) {
       this.setState({
-        filterNameError: 'You must enter a filter name'
+        categoryError: 'You must enter a valid category'
       });
+
+      this.formDidChange()
       error = true;
     }
 
@@ -301,76 +355,113 @@ class Form extends React.Component<IFormProps, IFormState> {
       this.setState({
         keywordsError: 'You must enter something'
       });
+
+      this.formDidChange()
       error = true;
     }
 
-    if (isNaN(this.state.historicalPeriod) || this.state.historicalPeriod < 30 || this.state.historicalPeriod > 365) {
+    if (this.state.feedbackScoreMin && this.state.feedbackScoreMin < 0) {
       this.setState({
-        historicalPeriodError: 'Historical period must be between 90 and 365 days'
+        feedbackScoreMinError: 'This value must be greater or equal to 0'
       });
-      error = true;
-    }
 
-    const categoryLevel = this.props.categoryHeirarchyValues.length - 1;
-    const categoryLevelCategories = this.props.categoryModels[categoryLevel];
-    let category: IEbayCategoryModel | undefined;
-
-    if (this.props.categoryHeirarchyValues[categoryLevel] == null || categoryLevelCategories == null) {
-      this.setState({
-        categoryError: 'You must select a category id'
-      });
       error = true;
-    } else {
-      category = categoryLevelCategories.find((c) => c.categoryName !== this.props.categoryHeirarchyValues[categoryLevel]);
-      if (categoryLevelCategories == null || category == null) {
-        this.setState({
-          categoryError: 'You must set a valid ebay category'
-        });
-        error = true;
-      }
+      this.formDidChange()
     }
 
     if (this.state.selectedConditions.length === 0) {
       this.setState({
         conditionError: 'You must select at least on category'
       });
+
+      this.formDidChange()
       error = true;
     }
 
-    if (!error) {
-      if (category) {
-        const conditionsAsNumbers = this.state.selectedConditions.map((c) => {
-          const model = this.props.ebayConditions.find((cm) => cm.name === c);
+    if (this.state.priceMax && this.state.priceMin && this.state.priceMin > this.state.priceMax) {
+      this.setState({
+        priceMaxError: 'Max Price must be greater or equal to Min Price',
+        priceMinError: ' '
+      });
 
-          if (model) {
-            return model.id;
-          }
+      this.formDidChange()
+      error = true;
+    }
 
-          return -1;
-        });
+    return error;
+  }
 
-        this.props.fetchFilterHistory(category.categoryID, this.state.keywords, conditionsAsNumbers, this.state.historicalPeriod);
+  private getConditionsAsModels = (conditionIds: number[]): IConditionModel[] => {
+    const conditions = this.props.ebayConditions.filter((c) => conditionIds.indexOf(c.id) > -1);
+
+    return conditions;
+  }
+
+  private getConditionsAsNumbers = (): number[] => {
+    const conditionsAsNumbers = this.state.selectedConditions.map((c) => {
+      const model = this.props.ebayConditions.find((cm) => cm.name === c);
+
+      if (model) {
+        return model.id;
       }
+
+      return -1;
+    });
+
+    return conditionsAsNumbers;
+  }
+
+  private calculateReport = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (!this.validateForm()) {
+      this.props.dispatch({
+        type: 'FetchResponseItems'
+      });
+
+      const conditionsAsNumbers = this.getConditionsAsNumbers();
+
+      const url = await getDataUrl();
+      const res = await fetch(`${url}/ebay/history?categoryId=${this.state.category ? this.state.category.categoryID : -1}&filterString=${encodeURIComponent(this.state.keywords)}&conditions=${conditionsAsNumbers.join(',')}${this.state.priceMin != null ? `&priceMin=${this.state.priceMin}` : ''}${this.state.priceMax != null ? `&priceMax=${this.state.priceMax}` : ''}${this.state.feedbackScoreMin != null ? `&minFeedbackScore=${this.state.feedbackScoreMin}` : ''}`);
+      const items: IEbayItem[] = await res.json();
+
+      this.props.dispatch({
+        type: 'SetResponseItems',
+        items: items.reverse()
+      });
+
+      let categories: IEbayCategoryModel[] = [];
+      
+      if (this.itemCategoryWizardRef.current) {
+        categories = this.itemCategoryWizardRef.current.getAllCategories();
+      }
+
+      this.props.dispatch({
+        type: 'SubmitForm',
+        binOnly: this.state.binOnly,
+        conditions: conditionsAsNumbers,
+        categories,
+        minUserFeedback: this.state.feedbackScoreMin,
+        keywords: this.state.keywords,
+        priceMax: this.state.priceMax,
+        priceMin: this.state.priceMin
+      });
     };
+  }
+  
+  private categoryUpdated = (category: IEbayCategoryModel | null) => {
+    this.setState({
+      category,
+      categoryError: ''
+    });
+
+    this.formDidChange()
   }
 }
 
 const mapStateToProps = (state: IReduxState): IFormStateProps => {
   return {
-    isFetchingFilterHistory: state.filterState.createFilterState.isFetchingFilterHistorySummary,
-    categoryHeirarchyValues: state.filterState.createFilterState.ebayCategoryWizardValues,
-    categoryModels: state.filterState.createFilterState.ebayCategoryHierarchy,
     ebayConditions: state.common.ebayItemConditions
   };
 };
 
-const mapDispatchToProps = (dispatch: Dispatch): IFormDispatchProps => {
-  return {
-    fetchFilterHistory: (categoryId: number, filterString: string, conditions: number[], daysBack: number) => dispatch<any>(getFilterHistorySummary(categoryId, filterString, conditions, daysBack)),
-    getChildCategories: (categoryId: number, level: number) => dispatch<any>(getChildCategories(categoryId, level)),
-    alterCategories: (level: number) => dispatch<any>(categoryLevelAltered(level)),
-    addCategoryLevelValue: (categoryName: string, level: number) => dispatch<any>(addCategoryLevelValue(categoryName, level))
-  };
-};
-
-export default connect(mapStateToProps, mapDispatchToProps)(Form);
+export default connect<IFormStateProps, {}, IFormInheritedProps>(mapStateToProps, () => ({}))(Form);

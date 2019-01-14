@@ -4,6 +4,61 @@ Author: Coderthemes
 Email: coderthemes@gmail.com
 File: Main Css
 */
+.wizard-header {
+  display: inline-block;
+}
+.wizard-break {
+  display: inline-block;
+  font-weight: 600;
+  margin: 0px 15px;
+}
+.wizard-header.active {
+  color: #eee;
+}
+.table-header {
+  border-top: 1px solid #434f5c;
+  border-bottom: 1px solid #434f5c;
+  border-color: #434f5c;
+  padding: .75rem;
+  font-weight: bold;
+}
+.table-cell {
+  padding: .75rem;
+  border-top: 1px solid #434f5c;
+}
+.report-table {
+  display: grid;
+  grid-template-columns: 1fr 2fr 1fr 2fr 1fr;
+}
+@keyframes spin {
+  0% {
+    transform: rotate(0deg) scale(1);
+  }
+  50% {
+    transform: rotate(180deg) scale(0.75);
+  }
+  100% {
+    transform: rotate(360deg) scale(1);
+  }
+}
+.click-refresh {
+  animation-name: spin;
+  animation-duration: 300ms;
+  animation-timing-function: linear;
+}
+.refresh-btn {
+  color: #98a6ad;
+}
+.ms-elem-remove:hover {
+  background: #ef5350 !important;
+}
+tr.active {
+  background: #4c5a67;
+}
+.emphasize {
+  color: #eee;
+  font-weight: 600;
+}
 .noselect {
   -webkit-touch-callout: none; /* iOS Safari */
     -webkit-user-select: none; /* Safari */
@@ -2190,7 +2245,9 @@ code, pre {
 .portlet .portlet-heading .portlet-widgets .collapsed .ion-minus-round:before {
   content: "\f217" !important;
 }
-
+.category-box-loading {
+  border-color: #00b19d;
+}
 .portlet .portlet-heading.bg-purple a, .portlet .portlet-heading.bg-info a, .portlet .portlet-heading.bg-success a, .portlet .portlet-heading.bg-primary a, .portlet .portlet-heading.bg-danger a, .portlet .portlet-heading.bg-warning a, .portlet .portlet-heading.bg-inverse a, .portlet .portlet-heading.bg-pink a {
   color: #ffffff;
 }
