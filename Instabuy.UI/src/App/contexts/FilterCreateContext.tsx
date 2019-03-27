@@ -15,7 +15,8 @@ const initialState: IFilterCreateContext = {
         binOnly: false,
         categories: [],
         conditions: [],
-        keywords: ''
+        keywords: '',
+        categoryDataLists: []
       },
       fullItemEbayItemIds: [],
       hotOrNotData: {
@@ -128,7 +129,8 @@ const reducer = (state: IFilterCreateContext, action: AnyAction): IFilterCreateC
       keywords: action.keywords,
       minUserFeedback: action.minUserFeedback,
       priceMax: action.priceMax,
-      priceMin: action.priceMin
+      priceMin: action.priceMin,
+      categoryDataLists: currentFilter.formData.categoryDataLists
     };
     return {...state, refinedFilterHistory};
   } else if (action.type === 'FormChanged') {
@@ -153,7 +155,8 @@ const reducer = (state: IFilterCreateContext, action: AnyAction): IFilterCreateC
             binOnly: false,
             categories: [],
             conditions: [],
-            keywords: ''
+            keywords: '',
+            categoryDataLists: []
           },
           fullItemEbayItemIds: [],
           hotOrNotData: {
@@ -177,6 +180,13 @@ const reducer = (state: IFilterCreateContext, action: AnyAction): IFilterCreateC
         }
       ]
     };
+  } else if (action.type === 'SetDataList') {
+    currentFilter.formData.categoryDataLists[action.level] = action.dataList;
+  } else if (action.type === 'StepBack') {
+    const filterHistory = state.refinedFilterHistory.slice();
+    refinedFilterHistory.pop();
+
+    return {...state, refinedFilterHistory: filterHistory};
   }
   return state;
 }

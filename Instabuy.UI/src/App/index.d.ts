@@ -21,6 +21,7 @@ export interface IFilterCreateFormData {
   priceMax?: number;
   minUserFeedback?: number;
   binOnly: boolean;
+  categoryDataLists: IEbayCategoryModel[][];
 }
 
 export interface IFilterCreateStatisticalData {

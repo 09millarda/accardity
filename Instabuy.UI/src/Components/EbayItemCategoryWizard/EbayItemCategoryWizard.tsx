@@ -2,6 +2,7 @@ import * as React from 'react';
 import ItemCategoryWizardSelectBox from 'src/Views/Filters/Create/ItemCategoryWizardSelectBox';
 import { IEbayCategoryModel } from 'src/App/index';
 import { getDataUrl } from 'src/App/common/endpointControl';
+import { FilterCreateContext } from 'src/App/contexts/FilterCreateContext';
 
 interface IEbayItemCategoryWizardInheritedProps {
   depth: number;
@@ -25,7 +26,18 @@ class EbayItemCategoryWizard extends React.PureComponent<EbayItemCategoryWizardP
     for (let i = 0; i < props.depth; i++) {
       const ref = React.createRef<ItemCategoryWizardSelectBox>();
       const defaultValue = this.props.defaultValues[i];
-      wizardBoxes.push(<ItemCategoryWizardSelectBox ref={ref} level={i} key={i} onValueChange={this.onValueChange} defaultValue={defaultValue} />);
+      wizardBoxes.push((
+        <FilterCreateContext.Consumer>
+          {
+            ({dispatch, refinedFilterHistory}) => {
+              const filter = refinedFilterHistory[refinedFilterHistory.length - 1];
+              return (
+                <ItemCategoryWizardSelectBox ref={ref} level={i} key={i} dispatch={dispatch} dataList={filter.formData.categoryDataLists[i] || [] } onValueChange={this.onValueChange} defaultValue={defaultValue} />
+              );
+            }
+          }
+        </FilterCreateContext.Consumer>
+      ));
       wizardBoxRefs.push(ref);
     }
 
@@ -36,7 +48,7 @@ class EbayItemCategoryWizard extends React.PureComponent<EbayItemCategoryWizardP
   }
 
   public async componentDidMount() {
-    if (this.props.depth > 0) {
+    if (this.props.depth > 0 && this.props.defaultValues.length === 0) {
       await this.fetchChildCategories(0, -1);
     }
   }

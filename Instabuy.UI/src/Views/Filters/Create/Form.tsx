@@ -62,7 +62,6 @@ class Form extends React.Component<IFormProps, IFormState> {
   }
 
   public componentDidMount() {
-    console.log(this.props.formInfo.categories);
     this.setState({
       ebayConditions: this.props.ebayConditions.map((c) => c.name),
       keywords: this.props.formInfo.keywords,
@@ -80,7 +79,7 @@ class Form extends React.Component<IFormProps, IFormState> {
       <div className="row">
         <div className="col-12">
           <div className="card-box" style={{paddingBottom: '0px'}}>
-            <h4 className="m-t-0 header-title">Create a new filter</h4>
+            <h4 className="m-t-0 header-title">Filter Builder</h4>
             <p className="text-muted m-b-30 font-14">Field marked with an asterisk (*) are required.</p>
             <hr/>
             <div className="row">

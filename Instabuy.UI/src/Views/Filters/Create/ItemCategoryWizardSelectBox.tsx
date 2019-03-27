@@ -1,18 +1,19 @@
 import * as React from 'react';
-import { IEbayCategoryModel } from 'src/App/index';
+import { IEbayCategoryModel, ContextDispatch } from 'src/App/index';
 import { guid } from 'src/App/common/guid';
 
 interface IItemCategoryWizardSelectBoxInheritedProps {
   level: number;
   onValueChange: (fromIndex: number, category: IEbayCategoryModel | null) => void;
   defaultValue: IEbayCategoryModel | null;
+  dataList: IEbayCategoryModel[];
+  dispatch: ContextDispatch;
 }
 
 type ItemCategoryWizardSelectBoxProps = IItemCategoryWizardSelectBoxInheritedProps;
 
 interface ItemCategoryWizardSelectBoxState {
   dataListId: string;
-  dataList: IEbayCategoryModel[];
   selectedValue: string;
 }
 
@@ -22,7 +23,6 @@ class ItemCategoryWizardSelectBox extends React.Component<ItemCategoryWizardSele
 
     this.state = {
       dataListId: guid(),
-      dataList: [],
       selectedValue: ''
    };
   }
@@ -34,11 +34,11 @@ class ItemCategoryWizardSelectBox extends React.Component<ItemCategoryWizardSele
   }
 
   public render() {
-    const categoryValues = this.state.dataList.map((c, i) => <option key={i} value={c.categoryName}>{c.categoryID}</option>);
+    const categoryValues = this.props.dataList.map((c, i) => <option key={i} value={c.categoryName}>{c.categoryID}</option>);
 
     return (
       <div>
-        <input type="text" className="form-control" list={this.state.dataListId} disabled={categoryValues.length === 0} value={this.state.selectedValue} onChange={this.onCategoryChange} />
+        <input type="text" className="form-control" list={this.state.dataListId} disabled={categoryValues.length === 0 && this.state.selectedValue.length === 0 && this.props.level !== 0} value={this.state.selectedValue} onChange={this.onCategoryChange} />
         <datalist id={this.state.dataListId}>
           {categoryValues}
         </datalist>
@@ -47,14 +47,18 @@ class ItemCategoryWizardSelectBox extends React.Component<ItemCategoryWizardSele
   }
 
   public getSelectedValue = (): IEbayCategoryModel | null => {
-    const category = this.state.dataList.find((i) => i.categoryName === this.state.selectedValue);
+    const category = this.props.dataList.find((i) => i.categoryName === this.state.selectedValue);
 
     return category || null;
   }
 
   public setDataList = (dataList: IEbayCategoryModel[]) => {
-    this.setState({
+    this.props.dispatch({
+      type: 'SetDataList',
       dataList,
+      level: this.props.level
+    });
+    this.setState({
       selectedValue: ''
     });
   }
@@ -62,7 +66,7 @@ class ItemCategoryWizardSelectBox extends React.Component<ItemCategoryWizardSele
   private onCategoryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
 
-    const category = this.state.dataList.find((i) => i.categoryName === value);
+    const category = this.props.dataList.find((i) => i.categoryName === value);
     this.props.onValueChange(this.props.level, category ? category : null);
 
     this.setState({
