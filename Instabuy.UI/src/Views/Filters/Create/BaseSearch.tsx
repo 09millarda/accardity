@@ -20,7 +20,7 @@ class BaseSearch extends Component {
           const filter = refinedFilterHistory[refinedFilterHistory.length - 1];
           return (
             <div className="row">
-              <div className="col-md-6">
+              <div className="col-md-12 col-xl-12">
                 <div className="row">
                   <div className="col-12">
                     <Form
@@ -48,7 +48,7 @@ class BaseSearch extends Component {
               </div>
               {(filter.statisticalData.items.length !== 0 ||
                 filter.isFetchingItems) && (
-                <div className="col-md-6 card-box">
+                <div className="col-md-12 col-xl-6 card-box">
                   <div className="p-20">
                     <WithLoading loading={filter.isFetchingItems}>
                       <h4 className="m-t-0 header-title">Summary</h4>

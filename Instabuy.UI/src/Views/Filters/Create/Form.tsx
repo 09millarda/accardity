@@ -91,7 +91,6 @@ class Form extends React.Component<IFormProps, IFormState> {
                       <div className="col-10">
                         <EbayItemCategoryWizard
                           depth={4}
-                          categoryChanged={this.categoryUpdated}
                           ref={this.itemCategoryWizardRef}
                           defaultValues={this.props.formInfo.categories}
                         />
@@ -288,7 +287,7 @@ class Form extends React.Component<IFormProps, IFormState> {
     this.formDidChange()
 
     if (this.itemCategoryWizardRef.current) {
-      this.itemCategoryWizardRef.current.clearDataLists();
+      this.itemCategoryWizardRef.current.resetWizard();
     }
   }
 
@@ -447,14 +446,14 @@ class Form extends React.Component<IFormProps, IFormState> {
     };
   }
   
-  private categoryUpdated = (category: IEbayCategoryModel | null) => {
-    this.setState({
-      category,
-      categoryError: ''
-    });
+  // private categoryUpdated = (category: IEbayCategoryModel | null) => {
+  //   this.setState({
+  //     category,
+  //     categoryError: ''
+  //   });
 
-    this.formDidChange()
-  }
+  //   this.formDidChange()
+  // }
 }
 
 const mapStateToProps = (state: IReduxState): IFormStateProps => {

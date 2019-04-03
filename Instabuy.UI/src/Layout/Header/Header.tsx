@@ -9,7 +9,7 @@ class Header extends React.Component {
           <div className="text-center">
             <a href="/" className="logo">
               <img src={Logo} alt="Instabuy Logo" width="30" />
-              <span style={{position: 'relative', top: '3px', left: '4px'}}>Instabuy</span>
+              <span style={{position: 'relative', top: '3px', left: '4px'}}>Accardity</span>
             </a>
           </div>
         </div>

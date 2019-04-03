@@ -29,6 +29,13 @@ class SideBar extends React.Component {
                     Create
                   </NavLink>
                 </li>
+                <li className="menu-title">Research</li>
+                <li>
+                  <NavLink exact={true} to="/research/create">
+                    <i className="fa fa-plus-square-o" />
+                    Create
+                  </NavLink>
+                </li>
                 <li className="menu-title">Bot</li>
                 <li>
                   <NavLink exact={true} to="/bot/dashboard">

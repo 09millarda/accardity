@@ -5,6 +5,7 @@ using System.Net;
 using System.Threading.Tasks;
 using Instabuy.Data;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 
 namespace Instabuy.Web.Controllers
 {
@@ -14,9 +15,11 @@ namespace Instabuy.Web.Controllers
     public class EbayController : ControllerBase
     {
         private readonly IEbaySearchRepository _ebaySearchRepository;
+        private ILogger<EbayController> _logger;
 
-        public EbayController(IEbaySearchRepository ebaySearchRepository)
+        public EbayController(IEbaySearchRepository ebaySearchRepository, ILogger<EbayController> logger)
         {
+            _logger = logger;
             _ebaySearchRepository = ebaySearchRepository;
         }
 
@@ -33,6 +36,7 @@ namespace Instabuy.Web.Controllers
         [Produces(typeof(IEnumerable<CategoryModel>))]
         public async Task<IActionResult> GetChildCategories(int categoryId)
         {
+            _logger.LogInformation("TEST INSTABUY");
             var categories = await _ebaySearchRepository.GetChildCategories(categoryId).ConfigureAwait(false);
 
             return Ok(categories.Where(c => c.CategoryID != categoryId));
@@ -46,6 +50,14 @@ namespace Instabuy.Web.Controllers
             var items = await _ebaySearchRepository.GetMultipleItems(ids).ConfigureAwait(false);
 
             return Ok(items);
+        }
+
+        [HttpGet("getAspectHistograms/{categoryId}")]
+        public async Task<IActionResult> GetAspectHistogramsByCategoryId(int categoryId)
+        {
+            var aspectHistograms = await _ebaySearchRepository.GetAspectHistogramsByCategoryId(categoryId).ConfigureAwait(false);
+
+            return Ok(aspectHistograms);
         }
     }
 }

@@ -1,4 +1,5 @@
-﻿using Instabuy.Data.FullItem.Processed;
+﻿using Instabuy.Data.EbayModels.Aspect_Histogram;
+using Instabuy.Data.FullItem.Processed;
 using Instabuy.Helpers;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
@@ -22,6 +23,22 @@ namespace Instabuy.Data.Sql
         public EbaySearchRepository(IOptions<EbaySettings> ebaySettings)
         {
             _ebaySettings = ebaySettings.Value;
+        }
+
+        public async Task<IEnumerable<AspectHistogram>> GetAspectHistogramsByCategoryId(int categoryId)
+        {
+            using (var client = new HttpClient())
+            {
+                var url = $"http://svcs.ebay.com/services/search/FindingService/v1?OPERATION-NAME=getHistograms&SERVICE-VERSION=1.0.0&SECURITY-APPNAME={_ebaySettings.ApiKey}&RESPONSE-DATA-FORMAT=JSON&REST-PAYLOAD&categoryId={categoryId}";
+
+                using (var res = await client.GetAsync(url).ConfigureAwait(false))
+                {
+                    var response = await res.Content.ReadAsStringAsync().ConfigureAwait(false);
+                    var jsonResponse = JsonConvert.DeserializeObject<GetHistogramsResponseResponse>(response);
+
+                    return jsonResponse.Normalize();
+                }
+            }
         }
 
         public async Task<IEnumerable<CategoryModel>> GetChildCategories(int categoryId)

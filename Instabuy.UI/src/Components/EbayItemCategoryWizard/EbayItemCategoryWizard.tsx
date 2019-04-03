@@ -2,19 +2,18 @@ import * as React from 'react';
 import ItemCategoryWizardSelectBox from 'src/Views/Filters/Create/ItemCategoryWizardSelectBox';
 import { IEbayCategoryModel } from 'src/App/index';
 import { getDataUrl } from 'src/App/common/endpointControl';
-import { FilterCreateContext } from 'src/App/contexts/FilterCreateContext';
 
 interface IEbayItemCategoryWizardInheritedProps {
   depth: number;
   defaultValues: IEbayCategoryModel[];
-  categoryChanged?: (category: IEbayCategoryModel | null) => void;
+  categoryChanged?: (categories: IEbayCategoryModel[]) => void;
 }
 
 type EbayItemCategoryWizardProps = IEbayItemCategoryWizardInheritedProps;
 
 interface IEbayItemCategoryWizardState {
-  wizardBoxes: JSX.Element[];
-  wizardBoxRefs: Array<React.RefObject<ItemCategoryWizardSelectBox>>;
+  wizardSelectBoxes: JSX.Element[];
+  wizardSelectBoxRefs: Array<React.RefObject<ItemCategoryWizardSelectBox>>;
 }
 
 class EbayItemCategoryWizard extends React.PureComponent<EbayItemCategoryWizardProps, IEbayItemCategoryWizardState> {
@@ -23,32 +22,78 @@ class EbayItemCategoryWizard extends React.PureComponent<EbayItemCategoryWizardP
 
     const wizardBoxes: JSX.Element[] = [];
     const wizardBoxRefs: Array<React.RefObject<ItemCategoryWizardSelectBox>> = [];
-    for (let i = 0; i < props.depth; i++) {
-      const ref = React.createRef<ItemCategoryWizardSelectBox>();
-      const defaultValue = this.props.defaultValues[i];
-      wizardBoxes.push((
-        <FilterCreateContext.Consumer>
-          {
-            ({dispatch, refinedFilterHistory}) => {
-              const filter = refinedFilterHistory[refinedFilterHistory.length - 1];
-              return (
-                <ItemCategoryWizardSelectBox ref={ref} level={i} key={i} dispatch={dispatch} dataList={filter.formData.categoryDataLists[i] || [] } onValueChange={this.onValueChange} defaultValue={defaultValue} />
-              );
-            }
-          }
-        </FilterCreateContext.Consumer>
-      ));
-      wizardBoxRefs.push(ref);
+    for (let i = 0; i < this.props.depth; i++) {
+      const wizardBoxRef = React.createRef<ItemCategoryWizardSelectBox>();
+      wizardBoxes.push(
+        <div className="col-3">
+          <ItemCategoryWizardSelectBox
+            level={i}
+            key={i}
+            onCurrentCategoryChange={this.onValueChange}
+            ref={wizardBoxRef}
+          />
+        </div>
+      );
+      wizardBoxRefs.push(wizardBoxRef);
     }
 
     this.state = {
-      wizardBoxes,
-      wizardBoxRefs
+      wizardSelectBoxRefs: wizardBoxRefs,
+      wizardSelectBoxes: wizardBoxes
     };
   }
 
   public async componentDidMount() {
-    if (this.props.depth > 0 && this.props.defaultValues.length === 0) {
+    this.resetWizard();
+    for (let i = 0; i < this.props.defaultValues.length; i++) {
+      const ref = this.state.wizardSelectBoxRefs[i];
+      if (ref != null && ref.current) {
+        const defaultValue = this.props.defaultValues[i];
+
+        ref.current.setState({
+          currentCategory: defaultValue,
+          inputVal: defaultValue.categoryName
+        });
+      }
+    }
+
+    const lastCategory = this.props.defaultValues[this.props.defaultValues.length - 1];
+    if (lastCategory != null) {
+      await this.fetchChildCategories(this.props.defaultValues.length, lastCategory.categoryID);
+    } else {
+      await this.fetchChildCategories(0, -1);
+    }    
+  }
+
+  public async componentWillReceiveProps(nextProps: EbayItemCategoryWizardProps) {
+    const refs = this.state.wizardSelectBoxRefs;
+    // tslint:disable-next-line:prefer-for-of
+    for (let i = 0; i < refs.length; i++) {
+      const ref = refs[i];
+
+      if (ref.current) {
+        if (nextProps.defaultValues[i]) {
+          const category = nextProps.defaultValues[i];
+          ref.current.setState({
+            currentCategory: category,
+            inputVal: category.categoryName
+          });
+        } else {
+          ref.current.setState({
+            currentCategory: null,
+            inputVal: '',
+            dataList: []
+          });
+        }
+      }
+    }
+
+    const lastCategory = nextProps.defaultValues[nextProps.defaultValues.length - 1];
+    if (lastCategory != null) {
+      if (!lastCategory.leafCategory) {
+        await this.fetchChildCategories(nextProps.defaultValues.length, lastCategory.categoryID);
+      }      
+    } else {
       await this.fetchChildCategories(0, -1);
     }
   }
@@ -57,52 +102,46 @@ class EbayItemCategoryWizard extends React.PureComponent<EbayItemCategoryWizardP
     return (
       <div className="row">
         {
-          this.state.wizardBoxes.map((e, i) => {
-            return (
-              <div key={i} className="col-3">
-                {e}
-              </div>
-            );
-          })
+          this.state.wizardSelectBoxes
         }
       </div>
     );
   }
 
-  public clearDataLists = () => {
-    for (let i = 0; i < this.props.depth; i++) {
-      const ref = this.state.wizardBoxRefs[i];
-
+  public resetWizard = () => {
+    this.state.wizardSelectBoxRefs.forEach((ref) => {
       if (ref.current) {
-        ref.current.setDataList([]);
+        ref.current.setState({
+          dataList: [],
+          inputVal: '',
+          currentCategory: null
+        });
       }
-    }
+    });
 
     this.fetchChildCategories(0, -1);
   }
 
-  public setDataList = (index: number, dataList: IEbayCategoryModel[]) => {
-    const ref = this.state.wizardBoxRefs[index];
+  public setDataListAndClearValue = (index: number, dataList: IEbayCategoryModel[]) => {
+    const ref = this.state.wizardSelectBoxRefs[index];
 
-    if (!ref.current) {
-      return;
+    if (ref != null && ref.current) {
+      ref.current.setState({
+        dataList,
+        inputVal: '',
+        currentCategory: null
+      });
     }
-
-    ref.current.setDataList(dataList);
   }
 
   public getAllCategories = (): IEbayCategoryModel[] => {
     const categories: IEbayCategoryModel[] = [];
 
-    for (const ref of this.state.wizardBoxRefs) {
-      if (ref.current) {
-        const category = ref.current.getSelectedValue();
-
-        if (category) {
-          categories.push(category);
-        }
+    this.state.wizardSelectBoxRefs.forEach((ref) => {
+      if (ref.current && ref.current.state.currentCategory != null) {
+        categories.push(ref.current.state.currentCategory);
       }
-    }
+    });
 
     return categories;
   }
@@ -112,38 +151,24 @@ class EbayItemCategoryWizard extends React.PureComponent<EbayItemCategoryWizardP
     const res = await fetch(`${url}/ebay/category/${parentCategoryId}`);
     const dataList: IEbayCategoryModel[] = await res.json();
 
-    this.setDataList(forIndex, dataList);
+    this.setDataListAndClearValue(forIndex, dataList);
   }
 
   private resetWizardAfterIndex(index: number) {
     index++;
     for (let i = index; i < this.props.depth; i++) {
-      this.setDataList(i, []);
+      this.setDataListAndClearValue(i, []);
     }
   }
 
   private onValueChange = async (fromIndex: number, category: IEbayCategoryModel | null) => {
     this.resetWizardAfterIndex(fromIndex);
     if (fromIndex < this.props.depth && category) {
-      if (!category.leafCategory) {
-        await this.fetchChildCategories(++fromIndex, category.categoryID);
+      if (this.props.categoryChanged) {
+        const categories = this.getAllCategories();
+        categories.push(category);
+        this.props.categoryChanged(categories);
       }
-    }
-
-    if (this.props.categoryChanged) {
-      if (fromIndex > 0 && !category) {
-        fromIndex--;
-        const ref = this.state.wizardBoxRefs[fromIndex];
-
-        if (ref.current) {
-          const parentCategory = ref.current.getSelectedValue();
-          if (parentCategory) {
-            category = parentCategory;
-          }
-        }
-      }
-
-      this.props.categoryChanged(category || null);
     }
   }
 }

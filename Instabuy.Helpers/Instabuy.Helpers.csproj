@@ -5,6 +5,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Seq.Extensions.Logging" Version="4.0.1" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\Instabuy.Data\Instabuy.Data.csproj" />
   </ItemGroup>
 

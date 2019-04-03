@@ -13,6 +13,46 @@ export type ContextDispatch = (action: AnyAction) => void;
 
 export type Dispatch<TState> = React.Dispatch<TState>;
 
+export interface ISelectedAspectValues {
+  aspectName: string;
+  aspectValueName: string;
+}
+
+export interface IAspectValue {
+  name: string;
+  count: number;
+}
+
+export interface IEbayAspectContainer {
+  aspectName: string;
+  aspects: IAspectValue[];
+}
+
+export interface IResearchFilterFormData {
+  categories: IEbayCategoryModel[];
+  keywords: string;
+  selectedConditions: string[];
+  shipToUkOnly: boolean;
+  bestOfferOnly: boolean;
+  gbpCurrencyOnly: boolean;
+  charityListingsOnly: boolean;
+  excludeAutoPay: boolean;
+  priceMin?: string;
+  priceMax?: string;
+  feedbackMin?: string;
+  feedbackMax?: string;
+  featuredOnly: boolean;
+  freeShippingOnly: boolean;
+  getItFastOnly: boolean;
+  hideDuplicateItems: boolean;
+  topRatedSellerOnly: boolean;
+  authorisedSellersOnly: boolean;
+  returnsAcceptedOnly: boolean;
+  ukListedOnly: boolean;
+  excludedCategories: string[];
+  binOnly: boolean;
+}
+
 export interface IFilterCreateFormData {
   categories: IEbayCategoryModel[];
   keywords: string;

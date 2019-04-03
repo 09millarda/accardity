@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Instabuy.Data.EbayModels.Aspect_Histogram;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -161,6 +162,23 @@ namespace Instabuy.Data
                     ReturnsAccepted = i.ReturnPolicy == null ? false : i.ReturnPolicy.ReturnsAccepted != "ReturnsNotAccepted"
                 }).ToList()
             };
+        }
+
+        public static IEnumerable<AspectHistogram> Normalize(this GetHistogramsResponseResponse res)
+        {
+            var aspects = res.GetHistogramsResponse.First()
+                .AspectHistogramContainer.First().Aspect
+                .Select(a => new AspectHistogram
+                {
+                    AspectName = a.Name,
+                    Aspects = a.ValueHistogram.Select(v => new Aspect
+                    {
+                        Name = v.ValueName,
+                        Count = v.Count.First()
+                    }).OrderByDescending(b => b.Count)
+                });
+
+            return aspects;
         }
     }
 }

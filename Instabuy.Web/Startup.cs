@@ -37,6 +37,10 @@ namespace Instabuy.Web
             {
                 options.ApiKey = Configuration["EbaySettings:ApiKey"];
             });
+            services.Configure<DatabaseSettings>((options) =>
+            {
+                options.ConnectionString = Configuration["DatabaseSettings:ConnectionString"];
+            });
             services.AddRepositories();
             services.AddCors(o =>
             {
@@ -45,6 +49,9 @@ namespace Instabuy.Web
                     .AllowAnyMethod()
                     .AllowAnyHeader()
                     .AllowCredentials());
+            });
+            services.AddLogging(b => {
+                b.AddSeq(Configuration.GetSection("Seq"));
             });
             services.AddMvc();
         }
