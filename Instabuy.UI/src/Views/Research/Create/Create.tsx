@@ -33,6 +33,7 @@ class Create extends React.PureComponent<{}, IState> {
         feedbackMax: '',
         feedbackMin: '',
         priceMax: '',
+        aspects: [],
         priceMin: '',
         selectedConditions: [],
         topRatedSellerOnly: false
@@ -109,6 +110,7 @@ class Create extends React.PureComponent<{}, IState> {
         keywords: formData.keywords,
         priceMax: formData.priceMax,
         priceMin: formData.priceMin,
+        aspects: formData.selectedAspects,
         returnsAcceptedOnly: formData.returnsAcceptedOnly,
         selectedConditions: formData.selectedConditions,
         shipToUkOnly: formData.shipToUkOnly,

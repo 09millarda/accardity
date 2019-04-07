@@ -1,6 +1,6 @@
 import * as React from "react";
 import EbayItemCategoryWizard from "../EbayItemCategoryWizard/EbayItemCategoryWizard";
-import { IEbayCategoryModel, IResearchFilterFormData } from "src/App/index";
+import { IEbayCategoryModel, IResearchFilterFormData, ISelectedAspectValues } from "src/App/index";
 import Switch from "react-switch";
 import EbayItemAspectFiltersWizard from '../EbayAspectFiltersWizard/EbayItemAspectFiltersWizard';
 
@@ -31,6 +31,7 @@ interface IState {
   ukListedOnly: boolean;
   excludedCategories: string;
   binOnly: boolean;
+  selectedAspects: ISelectedAspectValues[];
   feedbackMin?: string;
   feedbackMax?: string;
 }
@@ -47,6 +48,7 @@ class EbayFiltersForm extends React.PureComponent<IProps, IState> {
     this.categoryUpdated = this.categoryUpdated.bind(this);
 
     this.state = {
+      selectedAspects: [],
       feedbackMax: this.props.originalFilter.feedbackMax,
       feedbackMin: this.props.originalFilter.feedbackMin,
       priceMax: this.props.originalFilter.priceMax,
@@ -97,6 +99,7 @@ class EbayFiltersForm extends React.PureComponent<IProps, IState> {
       category: nextProps.originalFilter.categories[nextProps.originalFilter.categories.length - 1],
       feedbackMax: nextProps.originalFilter.feedbackMax,
       feedbackMin: nextProps.originalFilter.feedbackMin,
+      selectedAspects: nextProps.originalFilter.aspects,
       priceMax: nextProps.originalFilter.priceMax,
       priceMin: nextProps.originalFilter.priceMin,
       categoryError: "",
@@ -156,7 +159,9 @@ class EbayFiltersForm extends React.PureComponent<IProps, IState> {
           <div className="col-12">
             <label className="mt-3">Aspect Filters - <span className="text-danger" style={{fontSize: '16px'}}><b>Altering Categories will reset all aspect filters</b></span></label>
             <EbayItemAspectFiltersWizard
-              categoryId={this.state.category ? this.state.category.categoryID : undefined}
+              categories={this.state.categories}
+              defaultAspects={this.state.selectedAspects}
+              selectedAspectFiltersUpdate={this.selectedAspectsUpdated}
             />
           </div>
           <div className="col-12">
@@ -522,6 +527,12 @@ class EbayFiltersForm extends React.PureComponent<IProps, IState> {
       categoryError: ""
     });
   };
+
+  private selectedAspectsUpdated = (aspects: ISelectedAspectValues[]) => {
+    this.setState({
+      selectedAspects: aspects
+    });
+  }
 
   private conditionSelector = (): JSX.Element => {
     const main = (

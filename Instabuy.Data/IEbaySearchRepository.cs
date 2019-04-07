@@ -10,6 +10,6 @@ namespace Instabuy.Data
         Task<IEnumerable<EbayItemModelNormalized>> GetHistory(DateTime from, int categoryId, string keywords, int[] conditions, decimal? priceMin, decimal? priceMax, decimal? minFeedbackScore);
         Task<IEnumerable<CategoryModel>> GetChildCategories(int categoryId);
         Task<IEnumerable<FullItem.Processed.EbayItemModel>> GetMultipleItems(string[] itemIds);
-        Task<IEnumerable<AspectHistogram>> GetAspectHistogramsByCategoryId(int categoryId);
+        Task<IEnumerable<AspectHistogram>> GetAspectHistogramsByCategoryIdAndAspects(int categoryId, List<AspectValue> aspects);
     }
 }

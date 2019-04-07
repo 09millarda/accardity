@@ -33,7 +33,7 @@ class SideBar extends React.Component {
                 <li>
                   <NavLink exact={true} to="/research/create">
                     <i className="fa fa-plus-square-o" />
-                    Create
+                    Create Filter
                   </NavLink>
                 </li>
                 <li className="menu-title">Bot</li>

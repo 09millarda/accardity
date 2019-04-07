@@ -4,6 +4,7 @@ using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using Instabuy.Data;
+using Instabuy.Data.Web;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 
@@ -52,12 +53,17 @@ namespace Instabuy.Web.Controllers
             return Ok(items);
         }
 
-        [HttpGet("getAspectHistograms/{categoryId}")]
-        public async Task<IActionResult> GetAspectHistogramsByCategoryId(int categoryId)
+        [HttpPost("getAspectHistograms/{categoryId}")]
+        public async Task<IActionResult> GetAspectHistogramsByCategoryId([FromBody]AspectsGroupForm aspectGroup, int categoryId)
         {
-            var aspectHistograms = await _ebaySearchRepository.GetAspectHistogramsByCategoryId(categoryId).ConfigureAwait(false);
-
-            return Ok(aspectHistograms);
+            try
+            {
+                var aspectHistograms = await _ebaySearchRepository.GetAspectHistogramsByCategoryIdAndAspects(categoryId, aspectGroup.Aspects).ConfigureAwait(false);
+                return Ok(aspectHistograms);
+            } catch (InvalidOperationException e)
+            {
+                return BadRequest(e);
+            }
         }
     }
 }

@@ -35,6 +35,7 @@ export interface IResearchFilterFormData {
   shipToUkOnly: boolean;
   bestOfferOnly: boolean;
   gbpCurrencyOnly: boolean;
+  aspects: ISelectedAspectValues[],
   charityListingsOnly: boolean;
   excludeAutoPay: boolean;
   priceMin?: string;

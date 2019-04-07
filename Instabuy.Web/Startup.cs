@@ -78,7 +78,6 @@ namespace Instabuy.Web
 
                 if (!path.StartsWith("/api") && !Path.HasExtension(path))
                 {
-
                     context.Request.Path = "/index.html";
                     await next();
                 }

@@ -166,7 +166,9 @@ namespace Instabuy.Data
 
         public static IEnumerable<AspectHistogram> Normalize(this GetHistogramsResponseResponse res)
         {
-            var aspects = res.GetHistogramsResponse.First()
+            try
+            {
+                var aspects = res.GetHistogramsResponse.First()
                 .AspectHistogramContainer.First().Aspect
                 .Select(a => new AspectHistogram
                 {
@@ -178,7 +180,11 @@ namespace Instabuy.Data
                     }).OrderByDescending(b => b.Count)
                 });
 
-            return aspects;
+                return aspects;
+            } catch (Exception e)
+            {
+                throw new InvalidOperationException(e.Message);
+            }            
         }
     }
 }

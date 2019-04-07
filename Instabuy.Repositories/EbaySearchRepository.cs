@@ -25,11 +25,23 @@ namespace Instabuy.Data.Sql
             _ebaySettings = ebaySettings.Value;
         }
 
-        public async Task<IEnumerable<AspectHistogram>> GetAspectHistogramsByCategoryId(int categoryId)
+        public async Task<IEnumerable<AspectHistogram>> GetAspectHistogramsByCategoryIdAndAspects(int categoryId, List<AspectValue> aspects)
         {
             using (var client = new HttpClient())
             {
                 var url = $"http://svcs.ebay.com/services/search/FindingService/v1?OPERATION-NAME=getHistograms&SERVICE-VERSION=1.0.0&SECURITY-APPNAME={_ebaySettings.ApiKey}&RESPONSE-DATA-FORMAT=JSON&REST-PAYLOAD&categoryId={categoryId}";
+
+                for (int i = 0; i < aspects.Count; i++)
+                {
+                    var aspect = aspects[i];
+                    url += $"&aspectFilter({i}).aspectName={aspect.Name}";
+
+                    for (int j = 0; j < aspect.Values.Count; j++)
+                    {
+                        var value = aspect.Values[j];
+                        url += $"&aspectFilter({i}).aspectValue({j})={value}";
+                    }
+                }
 
                 using (var res = await client.GetAsync(url).ConfigureAwait(false))
                 {
